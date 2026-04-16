@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Shit-fixer",
+  "version": "1.0",
+  "description": "Fixes shit in ORT campus.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://campus.ort.edu.ar/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "permissions": ["activeTab"]
+}
