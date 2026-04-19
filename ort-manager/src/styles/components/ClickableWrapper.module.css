@@ -1,0 +1,33 @@
+@import url('../variables.css');
+
+.wrapper {
+    box-sizing: border-box;
+    border-radius: var(--corner-radius-component);
+    transition:
+        background-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
+    outline: none;
+    user-select: none;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    background: var(--color-item-hover-background);
+}
+
+.clickable:active {
+    transform: translateY(1px);
+}
+
+.clickable:focus-visible {
+    box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}

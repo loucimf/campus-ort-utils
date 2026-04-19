@@ -1,0 +1,78 @@
+:root,
+[data-theme="light"],
+.light {
+    color-scheme: light;
+
+    --font-family-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 20px;
+    --font-size-xl: 28px;
+    --font-size-2xl: 36px;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --line-height-tight: 1.08;
+    --line-height-normal: 1.5;
+
+    --space-2xs: 4px;
+    --space-xs: 8px;
+    --space-sm: 12px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+    --space-4xl: 84px;
+
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
+    --radius-pill: 999px;
+
+    --size-sidebar-width: 280px;
+    --size-button-height: 44px;
+    --size-icon-sm: 16px;
+    --size-icon-md: 24px;
+    --size-icon-lg: 32px;
+    --size-logo: 48px;
+
+    --color-primary: #e63f6f;
+    --color-primary-hover: #cc2f5d;
+    --color-primary-soft: #ffe4ec;
+    --color-primary-tinted: rgba(230, 63, 111, 0.12);
+    --color-primary-ring: rgba(230, 63, 111, 0.28);
+
+    --color-secondary: #5267b8;
+    --color-secondary-soft: #eef1ff;
+    --color-accent: #ff7a59;
+    --color-success: #198754;
+    --color-warning: #b7791f;
+    --color-error: #d92d20;
+
+    --color-background: #fff7fa;
+    --color-surface: #ffffff;
+    --color-surface-raised: #fffafb;
+    --color-surface-muted: #f9eef3;
+    --color-sidebar: #fff1f6;
+    --color-border: #efd3dc;
+    --color-border-strong: #d99aaa;
+
+    --color-text: #251821;
+    --color-text-muted: #69535f;
+    --color-text-soft: #8b7280;
+    --color-text-inverse: #ffffff;
+
+    --color-item-background: transparent;
+    --color-item-hover-background: #ffeaf1;
+    --color-item-active-background: var(--color-primary-tinted);
+    --color-item-active-text: var(--color-primary);
+    --color-disabled-background: #eadde2;
+
+    --shadow-sm: 0 1px 2px rgba(88, 35, 52, 0.08);
+    --shadow-md: 0 12px 28px rgba(88, 35, 52, 0.12);
+
+    --transition-fast: 160ms ease;
+}
