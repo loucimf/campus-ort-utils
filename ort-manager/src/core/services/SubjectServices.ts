@@ -2,7 +2,7 @@
 
 
 
-import type { TaskStatus, UserTaskWithDetails } from "@src/models/database";
+import type { SchoolSubject } from "@src/models/database";
 
 export class SchoolSubjectServices {
     private apiBaseUrl: string;
@@ -11,7 +11,7 @@ export class SchoolSubjectServices {
         this.apiBaseUrl = apiBaseUrl;
     }
 
-    async getAllSubjects(userId: string): Promise<SchoolSubject[]> {
+    async getAllSubjects(): Promise<SchoolSubject[]> {
         const response = await fetch(`${this.apiBaseUrl}/subjects`);
 
         if (!response.ok) {
@@ -24,10 +24,10 @@ export class SchoolSubjectServices {
             error?: string;
         };
 
-        if (!data.ok || !data.tasks) {
+        if (!data.ok || !data.subjects) {
             throw new Error(data.error ?? "Failed to fetch SchoolSubject");
         }
 
-        return data.tasks;
+        return data.subjects;
     }
 }
