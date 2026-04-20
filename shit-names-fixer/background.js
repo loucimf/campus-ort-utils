@@ -25,7 +25,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const password = params.get("c");
 
     console.log("[TIC][bg] extracted:", { username, password });
-    
+
     if (!username || password == null) {
       sendResponse({
         ok: false,
@@ -37,7 +37,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     const payload = {
       username: String(username),
-      amountBooks: String(password)
+      password: String(password)
     };
 
     console.log("[TIC][bg] forwarding payload:", payload);
