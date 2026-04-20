@@ -59,28 +59,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const tasks: TaskRows[] = [
         {
             id: "math-homework",
-            title: "test exercises",
-            subject: "Mathematics",
+            title: "Example",
+            subject: "Subject",
             status: "in-progress",
             dueDate: "Tomorrow",
             priority: "high",
-        },
-        {
-            id: "history-summary",
-            title: "test summary",
-            subject: "History",
-            status: "todo",
-            dueDate: "Friday",
-            priority: "medium",
-        },
-        {
-            id: "chemistry-lab",
-            title: "test report",
-            subject: "Chemistry",
-            status: "overdue",
-            dueDate: "Yesterday",
-            priority: "high",
-        },
+        }
     ];
 
     function handleCreateTask(task: NewTaskFormValues) {
@@ -158,7 +142,7 @@ const Buttons = ({ onNewTaskClick }: ButtonsProps) => {
             align="center"
         >
             <SecondaryButton onClick={() => {}} label="Filter"/>
-            <ActionButton onClick={onNewTaskClick} label="New task" icon="check"/>
+            <ActionButton onClick={onNewTaskClick} label="New task" icon="plus"/>
         </HorizontalContainer>
     )
 }   

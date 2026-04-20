@@ -16,6 +16,7 @@ export interface Tab {
 	id: string;
 	label: string;
 	content: React.ReactNode;
+	icon: ComponentProps<typeof SystemIcon>["type"];
 }
 
 const greetPage = (
@@ -31,9 +32,9 @@ const greetPage = (
 function App() {
 
 	const tabs: Tab[] = [
-		{ id: 'dashboard', label: 'Dashboard', content: <Dashboard padding={designSystem.units.lg} /> },
-		{ id: 'history', label: 'History', content: <BodyText tone="secondary">Coming soon..</BodyText> },
-		{ id: 'reports', label: 'Reports', content: <BodyText tone="secondary">Coming soon..</BodyText> },
+		{ id: 'dashboard', label: 'Dashboard', content: <Dashboard padding={designSystem.units.lg} />, icon: "dashboard" },
+		{ id: 'history', label: 'History', content: <BodyText tone="secondary">Coming soon..</BodyText>, icon: "chart2"  },
+		{ id: 'reports', label: 'Reports', content: <BodyText tone="secondary">Coming soon..</BodyText>, icon: "inbox" },
 	];
 
 	const [currentTab, setCurrentTab] = useState<Tab>(tabs[0]);

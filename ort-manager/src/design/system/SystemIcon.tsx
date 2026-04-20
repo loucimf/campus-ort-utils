@@ -48,6 +48,7 @@ import CircleCheckIcon from "@assets/SVGs/DesignSystem/circle-check.svg?react";
 import LoadingIcon from "@assets/SVGs/DesignSystem/loading.svg?react";
 import ExclamationIcon from "@assets/SVGs/DesignSystem/exclamation.svg?react";
 import MenuIcon from "@assets/SVGs/DesignSystem/menu.svg?react";
+import PlusIcon from "@assets/SVGs/DesignSystem/plus.svg?react";
 
 export interface SystemIconProps {
     color: string
@@ -101,6 +102,7 @@ export interface SystemIconProps {
         | 'menu'
         | 'loading'
         | 'circle-check'
+        | 'plus'
     className?: string
     size?: "small" | "medium" | "large" | "extra-large" | "extra-extra-large"
     glow?: boolean
@@ -244,5 +246,7 @@ export const SystemIcon: React.FC<SystemIconProps> = ({
             return <LoadingIcon style={iconStyle} className={iconClassName}/>
         case 'circle-check':
             return <CircleCheckIcon style={iconStyle} className={iconClassName}/>
+        case 'plus':
+            return <PlusIcon style={iconStyle} className={iconClassName}/> 
     }
 }

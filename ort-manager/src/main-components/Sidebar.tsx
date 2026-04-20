@@ -41,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
                 {tabs.map(tab => (
                     <SidebarButton 
+                        icon={tab.icon}
                         key={tab.id} 
                         label={tab.label} 
                         onClick={() => handleTabClick(tab)} 
