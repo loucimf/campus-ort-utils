@@ -1,5 +1,5 @@
 (() => {
-  const TARGET_URL = "https://campus.ort.edu.ar/ajaxactions/LogearUsuario";
+  const TARGET_PATH = "/ajaxactions/LogearUsuario";
 
   console.log("[TIC][page] xhr-hook.js loaded");
 
@@ -22,7 +22,7 @@
 
       console.log("[TIC][page] XHR send:", { method, url, body });
 
-      if (method === "POST" && url === TARGET_URL) {
+      if (method === "POST" && url === TARGET_PATH) {
         console.log("[TIC][page] TARGET REQUEST CAUGHT", {
           method,
           url,

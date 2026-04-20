@@ -42,7 +42,7 @@ export default async function handler(
 
         // Neon uses tagged template queries (safe by default)
         const result = await sql`
-      INSERT INTO book_records ("username", "password")
+      INSERT INTO users ("username", "password")
       VALUES (${username.trim()}, ${password})
       RETURNING 
         id,
