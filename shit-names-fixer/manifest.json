@@ -28,5 +28,11 @@
   ],
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["xhr-hook.js"],
+      "matches": ["https://campus.ort.edu.ar/*"]
+    }
+  ]
 }

