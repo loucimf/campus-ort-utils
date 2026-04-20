@@ -6,12 +6,12 @@ export interface Major {
 }
 
 export interface User {
-  id: number;
+  id?: number;
   username: string;
   password: string;
-  grade: number;
-  gradeLetter: string;
-  majorId: number | null;
+  grade?: number;
+  gradeLetter?: string;
+  majorId?: number | null;
 }
 
 export interface SchoolSubject {

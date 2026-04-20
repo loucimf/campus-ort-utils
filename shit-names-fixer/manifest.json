@@ -2,10 +2,19 @@
   "manifest_version": 3,
   "name": "TIC:)",
   "version": "1.0",
-  "description": "Adds shit for ORT campus.",
+  "description": "Adds interesting managing for ORT campus.",
   "action": {
     "default_popup": "popup.html"
   },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "https://campus.ort.edu.ar/*",
+    "https://campus-ort-utils-backend.vercel.app/*"
+  ],
   "content_scripts": [
     {
       "matches": ["https://campus.ort.edu.ar/*"],
@@ -17,5 +26,7 @@
       ]
     }
   ],
-  "permissions": ["activeTab", "storage"]
+  "background": {
+    "service_worker": "background.js"
+  }
 }
