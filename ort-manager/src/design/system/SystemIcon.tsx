@@ -44,6 +44,10 @@ import ArrowUpIcon from "@assets/SVGs/DesignSystem/arrow-up.svg?react";
 import ArrowDownIcon from "@assets/SVGs/DesignSystem/arrow-down.svg?react";
 import CycleIcon from "@assets/SVGs/DesignSystem/cycle.svg?react";
 import RainCloud from "@assets/SVGs/DesignSystem/raincloud.svg?react";
+import CircleCheckIcon from "@assets/SVGs/DesignSystem/circle-check.svg?react";
+import LoadingIcon from "@assets/SVGs/DesignSystem/loading.svg?react";
+import ExclamationIcon from "@assets/SVGs/DesignSystem/exclamation.svg?react";
+import MenuIcon from "@assets/SVGs/DesignSystem/menu.svg?react";
 
 export interface SystemIconProps {
     color: string
@@ -93,6 +97,10 @@ export interface SystemIconProps {
         | 'arrow-down'
         | 'cycle'
         | 'rain-cloud'
+        | 'exclamation'
+        | 'menu'
+        | 'loading'
+        | 'circle-check'
     className?: string
     size?: "small" | "medium" | "large" | "extra-large" | "extra-extra-large"
     glow?: boolean
@@ -228,5 +236,13 @@ export const SystemIcon: React.FC<SystemIconProps> = ({
             return <CycleIcon style={iconStyle} className={iconClassName}/>
         case 'rain-cloud':
             return <RainCloud style={iconStyle} className={iconClassName}/>
+        case 'exclamation':
+            return <ExclamationIcon style={iconStyle} className={iconClassName}/>
+        case 'menu':
+            return <MenuIcon style={iconStyle} className={iconClassName}/>
+        case 'loading':
+            return <LoadingIcon style={iconStyle} className={iconClassName}/>
+        case 'circle-check':
+            return <CircleCheckIcon style={iconStyle} className={iconClassName}/>
     }
 }

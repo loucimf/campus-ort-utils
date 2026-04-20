@@ -13,6 +13,7 @@ interface BaseContainerProps {
     align?: CSSProperties["alignItems"];
     justify?: CSSProperties["justifyContent"];
     border?: CSSProperties["border"];
+    borderBottom?: CSSProperties["borderBottom"];
 }
 
 
@@ -50,6 +51,7 @@ export const HorizontalContainer: React.FC<BaseContainerProps> = ({
     align,
     justify,
     padding,
+    borderBottom,
 }) => {
     return (
         <div className="row" style={{ 
@@ -59,7 +61,8 @@ export const HorizontalContainer: React.FC<BaseContainerProps> = ({
             backgroundColor, 
             alignItems: align, 
             justifyContent: justify, 
-            padding 
+            padding,
+            borderBottom
         }}>
             {children}
         </div>

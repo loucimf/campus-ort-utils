@@ -17,6 +17,7 @@ export const DataPoint: React.FC<DataPointProps> = ({ value = "1", label = "some
     return (
         <CardContainer
             width={designSystem.sizes.twentyFive}
+            boxShadow={designSystem.shadows.sm}
         >
             <HorizontalContainer
                 align="center"

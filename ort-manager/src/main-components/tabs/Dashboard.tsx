@@ -1,5 +1,6 @@
 import { ActionButton, SecondaryButton } from "@src/components/Buttons";
 import { DataPoint } from "@src/components/DataPoint";
+import { TaskTable, type Task } from "@src/components/TaskTable";
 import { SectionTitle } from "@src/components/Texts";
 import { HorizontalContainer, VerticalContainer } from "@src/design/system/containers"
 import { designSystem } from "@src/design/system/designSystem";
@@ -11,6 +12,33 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({
     padding,
 }) => {
+    const tasks: Task[] = [
+        {
+            id: "math-homework",
+            title: "Homework exercises",
+            subject: "Mathematics",
+            status: "in-progress",
+            dueDate: "Tomorrow",
+            priority: "high",
+        },
+        {
+            id: "history-summary",
+            title: "Chapter summary",
+            subject: "History",
+            status: "todo",
+            dueDate: "Friday",
+            priority: "medium",
+        },
+        {
+            id: "chemistry-lab",
+            title: "Lab report",
+            subject: "Chemistry",
+            status: "overdue",
+            dueDate: "Yesterday",
+            priority: "high",
+        },
+    ];
+
     return (
         <VerticalContainer
             padding={padding}
@@ -23,11 +51,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 width={designSystem.sizes.hundred}
                 height={designSystem.sizes.ten}
             >
-                <DataPoint label="To do" iconColor={"#1c75bd"} backColor="#1c75bd3d" iconType="clock"/>
-                <DataPoint label="Completed" iconColor={"#198754"} backColor="#1987544d" iconType="check"/>
-                <DataPoint label="In progress" iconColor={"#ffc107"} backColor="#ffc1074d" iconType="check"/>
-                <DataPoint label="Overdue" iconColor={"#d92d20"} backColor="#d92c2041" iconType="check"/>
+                <DataPoint label="To do" iconColor={"#1c75bd"} backColor="#1c75bd15" iconType="menu"/>
+                <DataPoint label="Completed" iconColor={"#198754"} backColor="#19875415" iconType="circle-check"/>
+                <DataPoint label="In progress" iconColor={"#ffc107"} backColor="#ffc10715" iconType="loading"/>
+                <DataPoint label="Overdue" iconColor={"#d92d20"} backColor="#d92c2015" iconType="exclamation"/>
             </HorizontalContainer>
+            <TaskTable
+                tasks={tasks}
+                onTaskComplete={task => console.log("Completed task", task)}
+                onTaskDelete={task => console.log("Deleted task", task)}
+                onTaskSelect={task => console.log("Selected task", task)}
+            />
         </VerticalContainer>
     )
 }
@@ -54,8 +88,8 @@ const Buttons = () => {
             justify="end"
             align="center"
         >
-            <SecondaryButton onClick={() => {}} label="New"/>
-            <ActionButton onClick={() => {}} label="Filter"/>
+            <SecondaryButton onClick={() => {}} label="Filter"/>
+            <ActionButton onClick={() => {}} label="New task" icon="check"/>
         </HorizontalContainer>
     )
 }   

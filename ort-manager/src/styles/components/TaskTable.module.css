@@ -1,0 +1,7 @@
+.taskRow {
+    transition: background-color var(--transition-fast);
+}
+
+.taskRow:hover {
+    background-color: var(--color-surface-muted);
+}
