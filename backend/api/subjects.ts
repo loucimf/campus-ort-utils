@@ -8,6 +8,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
     if (handleOptions(request, response)) {
         return;
     }
+    
+    console.log("api/subjects: HANDLING SUBJECT REQUEST")
 
     try {
         if (request.method === "GET") {

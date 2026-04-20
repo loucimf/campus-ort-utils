@@ -69,11 +69,14 @@ export default async function handler(request: VercelRequest, response: VercelRe
         return;
     }
 
+    console.log("api/tasks: HANDLING TASKS REQUEST")
+
+
     try {
         if (request.method === "GET") {
             const userId = getRequiredId(request.query.userId, "userId");
             const tasks = await getUserTasks(userId);
-
+            
             json(request, response, 200, {
                 ok: true,
                 tasks,
