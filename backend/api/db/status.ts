@@ -9,7 +9,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   if (request.method !== "GET") {
-    methodNotAllowed(response, ["GET", "OPTIONS"]);
+    methodNotAllowed(request, response, ["GET", "OPTIONS"]);
     return;
   }
 
@@ -18,11 +18,11 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const rows = await sql`select now() as now`;
     const typedRows = rows as { now: string }[];
 
-    json(response, 200, {
+    json(request, response, 200, {
       ok: true,
       now: typedRows[0]?.now,
     });
   } catch (error) {
-    internalError(response, error);
+    internalError(request, response, error);
   }
 }

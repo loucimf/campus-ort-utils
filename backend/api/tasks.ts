@@ -43,7 +43,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
             const userId = getRequiredId(request.query.userId, "userId");
             const tasks = await getUserTasks(userId);
 
-            json(response, 200, {
+            json(request, response, 200, {
                 ok: true,
                 tasks,
             });
@@ -57,14 +57,14 @@ export default async function handler(request: VercelRequest, response: VercelRe
             const task = await updateUserTaskStatus(userTaskId, status);
 
             if (!task) {
-                json(response, 404, {
+                json(request, response, 404, {
                     ok: false,
                     error: "Task not found",
                 });
                 return;
             }
 
-            json(response, 200, {
+            json(request, response, 200, {
                 ok: true,
                 task,
             });
@@ -76,30 +76,30 @@ export default async function handler(request: VercelRequest, response: VercelRe
             const deletedTask = await deleteUserTask(userTaskId);
 
             if (!deletedTask) {
-                json(response, 404, {
+                json(request, response, 404, {
                     ok: false,
                     error: "Task not found",
                 });
                 return;
             }
 
-            json(response, 200, {
+            json(request, response, 200, {
                 ok: true,
                 deletedTask,
             });
             return;
         }
 
-        methodNotAllowed(response, ["GET", "PATCH", "DELETE", "OPTIONS"]);
+        methodNotAllowed(request, response, ["GET", "PATCH", "DELETE", "OPTIONS"]);
     } catch (error) {
         if (error instanceof Error && error.message.includes("must be")) {
-            json(response, 400, {
+            json(request, response, 400, {
                 ok: false,
                 error: error.message,
             });
             return;
         }
 
-        internalError(response, error);
+        internalError(request, response, error);
     }
 }

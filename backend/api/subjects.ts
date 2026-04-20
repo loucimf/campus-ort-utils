@@ -13,22 +13,22 @@ export default async function handler(request: VercelRequest, response: VercelRe
         if (request.method === "GET") {
             const subjects = await getAllSubjects();
 
-            json(response, 200, {
+            json(request, response, 200, {
                 ok: true,
                 subjects,
             });
             return;
         }
-        methodNotAllowed(response, ["GET", "OPTIONS"]);
+        methodNotAllowed(request, response, ["GET", "OPTIONS"]);
     } catch (error) {
         if (error instanceof Error && error.message.includes("must be")) {
-            json(response, 400, {
+            json(request, response, 400, {
                 ok: false,
                 error: error.message,
             });
             return;
         }
 
-        internalError(response, error);
+        internalError(request, response, error);
     }
 }

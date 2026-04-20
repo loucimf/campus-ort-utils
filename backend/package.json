@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "vercel": "^51.8.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

@@ -8,11 +8,11 @@ export default function handler(request: VercelRequest, response: VercelResponse
     }
 
     if (request.method !== "GET") {
-        methodNotAllowed(response, ["GET", "OPTIONS"]);
+        methodNotAllowed(request, response, ["GET", "OPTIONS"]);
         return;
     }
 
-    json(response, 200, {
+    json(request, response, 200, {
         ok: true,
         service: "ort-manager-backend",
     });
