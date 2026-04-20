@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSql } from "../src/db/client.js";
+import { getUser } from "../src/repositories/users.js";
 
 export default async function handler(
   req: VercelRequest,
@@ -15,6 +16,13 @@ export default async function handler(
     // Accept both "username" and "user" (from your extension)
     const username = req.body.username ?? req.body.user;
     const password = req.body.password;
+    const existingUser = await getUser(username)
+
+    if (existingUser != null) {
+      return res.status(400).json({
+        error: "user already exists.",
+      });
+    }
 
     if (
       typeof username !== "string" ||
