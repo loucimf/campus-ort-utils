@@ -1,21 +1,63 @@
 import { ActionButton, SecondaryButton } from "@src/components/Buttons";
 import { DataPoint } from "@src/components/DataPoint";
-import { TaskTable, type Task } from "@src/components/TaskTable";
+import { TaskTable, type TaskRows } from "@src/components/TaskTable";
 import { SectionTitle } from "@src/components/Texts";
+import { API_BASE_URL } from "@src/core/api";
+import { TaskService } from "@src/core/services/TaskServices";
 import { HorizontalContainer, VerticalContainer } from "@src/design/system/containers"
 import { designSystem } from "@src/design/system/designSystem";
+import type { UserTaskWithDetails } from "@src/models/database";
+import { useEffect, useState } from "react";
 
 interface DashboardProps {
     padding: string;
 }
 
+const service = new TaskService(API_BASE_URL)
+
+function mapTaskToRow(task: UserTaskWithDetails): TaskRows {
+    return {
+        id: String(task.id),
+        title: task.title,
+        subject: task.subjectName,
+        status: task.status === "Completed"
+            ? "completed"
+            : task.status === "Overdue"
+                ? "overdue"
+                : "todo",
+        dueDate: task.deliverDate,
+        priority: "medium",
+    };
+}
+
 export const Dashboard: React.FC<DashboardProps> = ({
     padding,
 }) => {
-    const tasks: Task[] = [
+    
+    const [allTasks, setAllTasks] = useState<TaskRows[]>([]);
+
+    async function fetchTasks() {
+        const tasks = await service.getTasks("1");
+        return tasks.map(mapTaskToRow);
+    }
+
+    useEffect(() => {
+        async function loadTasks() {
+            try {
+                const tasks = await fetchTasks();
+                setAllTasks(tasks);
+            } catch (error) {
+                console.error("Error fetching tasks:", error);
+            }
+        }
+
+        loadTasks();
+    }, [])           
+
+    const tasks: TaskRows[] = [
         {
             id: "math-homework",
-            title: "Homework exercises",
+            title: "test exercises",
             subject: "Mathematics",
             status: "in-progress",
             dueDate: "Tomorrow",
@@ -23,7 +65,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         },
         {
             id: "history-summary",
-            title: "Chapter summary",
+            title: "test summary",
             subject: "History",
             status: "todo",
             dueDate: "Friday",
@@ -31,7 +73,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         },
         {
             id: "chemistry-lab",
-            title: "Lab report",
+            title: "test report",
             subject: "Chemistry",
             status: "overdue",
             dueDate: "Yesterday",
@@ -57,7 +99,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <DataPoint label="Overdue" iconColor={"#d92d20"} backColor="#d92c2015" iconType="exclamation"/>
             </HorizontalContainer>
             <TaskTable
-                tasks={tasks}
+                tasks={allTasks.length > 0 ? allTasks : tasks}
                 onTaskComplete={task => console.log("Completed task", task)}
                 onTaskDelete={task => console.log("Deleted task", task)}
                 onTaskSelect={task => console.log("Selected task", task)}

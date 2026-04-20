@@ -9,7 +9,7 @@ import styles from "@styles/components/TaskTable.module.css";
 type TaskStatus = "todo" | "in-progress" | "completed" | "overdue";
 type TaskPriority = "low" | "medium" | "high";
 
-export interface Task {
+export interface TaskRows {
     id: string;
     title: string;
     subject: string;
@@ -19,14 +19,14 @@ export interface Task {
 }
 
 interface TaskTableProps {
-    tasks?: Task[];
+    tasks?: TaskRows[];
     emptyMessage?: string;
-    onTaskComplete?: (task: Task) => void;
-    onTaskDelete?: (task: Task) => void;
-    onTaskSelect?: (task: Task) => void;
+    onTaskComplete?: (task: TaskRows) => void;
+    onTaskDelete?: (task: TaskRows) => void;
+    onTaskSelect?: (task: TaskRows) => void;
 }
 
-const defaultTasks: Task[] = [
+const defaultTasks: TaskRows[] = [
     {
         id: "math-homework",
         title: "Homework exercises",
@@ -131,7 +131,7 @@ export const TaskTable: React.FC<TaskTableProps> = ({
         setRows(tasks);
     }, [tasks]);
 
-    function completeTask(task: Task) {
+    function completeTask(task: TaskRows) {
         const completedTask = { ...task, status: "completed" as const };
 
         setRows(currentRows =>
@@ -140,7 +140,7 @@ export const TaskTable: React.FC<TaskTableProps> = ({
         onTaskComplete?.(completedTask);
     }
 
-    function deleteTask(task: Task) {
+    function deleteTask(task: TaskRows) {
         setRows(currentRows => currentRows.filter(row => row.id !== task.id));
         onTaskDelete?.(task);
     }
@@ -219,10 +219,10 @@ function HeaderCell({ label, align = "left" }: HeaderCellProps) {
 }
 
 interface TaskRowProps {
-    task: Task;
-    onComplete: (task: Task) => void;
-    onDelete: (task: Task) => void;
-    onSelect?: (task: Task) => void;
+    task: TaskRows;
+    onComplete: (task: TaskRows) => void;
+    onDelete: (task: TaskRows) => void;
+    onSelect?: (task: TaskRows) => void;
 }
 
 function TaskRow({ task, onComplete, onDelete, onSelect }: TaskRowProps) {
