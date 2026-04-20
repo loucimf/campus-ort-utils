@@ -5,6 +5,7 @@ dotenv.config();
 const defaultFrontendOrigins = [
   "http://127.0.0.1:5173",
   "https://ort-manager.vercel.app",
+  "https://campus.ort.edu.ar"
 ];
 
 function parseFrontendOrigins() {

