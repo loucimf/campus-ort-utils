@@ -7,6 +7,7 @@ interface BaseTextProps {
     children?: ReactNode;
     text?: ReactNode;
     as?: ElementType;
+    id?: string;
     className?: string;
     style?: CSSProperties;
     tone?: TextTone;
@@ -33,6 +34,7 @@ function TextBase({
     as: Component = "span",
     children,
     text,
+    id,
     className,
     style,
     tone = "primary",
@@ -40,6 +42,7 @@ function TextBase({
 }: BaseTextProps) {
     return (
         <Component
+            id={id}
             className={className}
             style={{
                 margin: 0,

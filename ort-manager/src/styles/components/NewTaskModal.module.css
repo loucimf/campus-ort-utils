@@ -1,0 +1,61 @@
+.form {
+    display: grid;
+    gap: var(--space-md);
+}
+
+.field {
+    display: grid;
+    gap: var(--space-xs);
+}
+
+.input,
+.textarea {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm);
+    color: var(--color-text);
+    background: var(--color-surface-raised);
+    font: inherit;
+}
+
+.textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+
+.input:focus,
+.textarea:focus {
+    border-color: var(--color-primary);
+    outline: 3px solid var(--color-primary-ring);
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+
+.button {
+    min-height: var(--size-button-height);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    cursor: pointer;
+    font: inherit;
+}
+
+.primaryButton {
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    background: var(--color-primary);
+}
+
+.error {
+    color: var(--color-error);
+}
+

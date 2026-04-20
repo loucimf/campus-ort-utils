@@ -1,5 +1,6 @@
 import { ActionButton, SecondaryButton } from "@src/components/Buttons";
 import { DataPoint } from "@src/components/DataPoint";
+import { NewTaskModal, type NewTaskFormValues } from "@src/components/NewTaskModal";
 import { TaskTable, type TaskRows } from "@src/components/TaskTable";
 import { SectionTitle } from "@src/components/Texts";
 import { API_BASE_URL } from "@src/core/api";
@@ -35,6 +36,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
     
     const [allTasks, setAllTasks] = useState<TaskRows[]>([]);
+    const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
 
     async function fetchTasks() {
         const tasks = await service.getTasks("1");
@@ -81,6 +83,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
         },
     ];
 
+    function handleCreateTask(task: NewTaskFormValues) {
+        const nextTask: TaskRows = {
+            id: `local-${crypto.randomUUID()}`,
+            title: task.title,
+            subject: `Subject #${task.subjectId}`,
+            status: "todo",
+            dueDate: task.deliverDate,
+            priority: "medium",
+        };
+
+        setAllTasks(currentTasks => [nextTask, ...currentTasks]);
+    }
+
     return (
         <VerticalContainer
             padding={padding}
@@ -88,7 +103,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             width={designSystem.sizes.hundred}
             gap={designSystem.units.xxl}
         >
-            <Header/>
+            <Header onNewTaskClick={() => setIsNewTaskModalOpen(true)} />
             <HorizontalContainer
                 width={designSystem.sizes.hundred}
                 height={designSystem.sizes.ten}
@@ -104,11 +119,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 onTaskDelete={task => console.log("Deleted task", task)}
                 onTaskSelect={task => console.log("Selected task", task)}
             />
+            <NewTaskModal
+                isOpen={isNewTaskModalOpen}
+                onClose={() => setIsNewTaskModalOpen(false)}
+                onCreateTask={handleCreateTask}
+            />
         </VerticalContainer>
     )
 }
 
-const Header = () => {
+interface HeaderProps {
+    onNewTaskClick: () => void;
+}
+
+const Header = ({ onNewTaskClick }: HeaderProps) => {
     return (
         <HorizontalContainer
             width={designSystem.sizes.hundred}
@@ -117,13 +141,16 @@ const Header = () => {
             align="center"
         >
             <SectionTitle>Tasks</SectionTitle>
-            <Buttons/>
+            <Buttons onNewTaskClick={onNewTaskClick} />
         </HorizontalContainer>
     )
 }
 
+interface ButtonsProps {
+    onNewTaskClick: () => void;
+}
 
-const Buttons = () => {
+const Buttons = ({ onNewTaskClick }: ButtonsProps) => {
     return (
         <HorizontalContainer
             width={designSystem.sizes.twenty}
@@ -131,7 +158,7 @@ const Buttons = () => {
             align="center"
         >
             <SecondaryButton onClick={() => {}} label="Filter"/>
-            <ActionButton onClick={() => {}} label="New task" icon="check"/>
+            <ActionButton onClick={onNewTaskClick} label="New task" icon="check"/>
         </HorizontalContainer>
     )
 }   
