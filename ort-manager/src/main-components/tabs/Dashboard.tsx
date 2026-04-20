@@ -4,10 +4,11 @@ import { NewTaskModal, type NewTaskFormValues } from "@src/components/NewTaskMod
 import { TaskTable, type TaskRows } from "@src/components/TaskTable";
 import { SectionTitle } from "@src/components/Texts";
 import { API_BASE_URL } from "@src/core/api";
+import { SchoolSubjectServices } from "@src/core/services/SubjectServices";
 import { TaskService } from "@src/core/services/TaskServices";
 import { HorizontalContainer, VerticalContainer } from "@src/design/system/containers"
 import { designSystem } from "@src/design/system/designSystem";
-import type { UserTaskWithDetails } from "@src/models/database";
+import type { SchoolSubject, UserTaskWithDetails } from "@src/models/database";
 import { useEffect, useState } from "react";
 
 interface DashboardProps {
@@ -15,6 +16,8 @@ interface DashboardProps {
 }
 
 const service = new TaskService(API_BASE_URL)
+const subjectService = new SchoolSubjectServices(API_BASE_URL);
+const signedInUserId = 1;
 
 function mapTaskToRow(task: UserTaskWithDetails): TaskRows {
     return {
@@ -36,24 +39,42 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
     
     const [allTasks, setAllTasks] = useState<TaskRows[]>([]);
+    const [schoolSubjects, setSchoolSubjects] = useState<SchoolSubject[]>([]);
     const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
 
     async function fetchTasks() {
-        const tasks = await service.getTasks("1");
+        const tasks = await service.getTasks(String(signedInUserId));
         return tasks.map(mapTaskToRow);
     }
 
+    async function handleCreateTask(task: NewTaskFormValues) {
+        const createdTask = await service.createTask({
+            userId: signedInUserId,
+            subjectId: task.subjectId,
+            title: task.title,
+            description: task.description,
+            deliverDate: task.deliverDate,
+        });
+
+        setAllTasks(currentTasks => [mapTaskToRow(createdTask), ...currentTasks]);
+    }
+
     useEffect(() => {
-        async function loadTasks() {
+        async function loadDashboardData() {
             try {
-                const tasks = await fetchTasks();
+                const [tasks, subjects] = await Promise.all([
+                    fetchTasks(),
+                    subjectService.getAllSubjects(),
+                ]);
+
                 setAllTasks(tasks);
+                setSchoolSubjects(subjects);
             } catch (error) {
-                console.error("Error fetching tasks:", error);
+                console.error("Error fetching dashboard data:", error);
             }
         }
 
-        loadTasks();
+        loadDashboardData();
     }, [])           
 
     const tasks: TaskRows[] = [
@@ -66,19 +87,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             priority: "high",
         }
     ];
-
-    function handleCreateTask(task: NewTaskFormValues) {
-        const nextTask: TaskRows = {
-            id: `local-${crypto.randomUUID()}`,
-            title: task.title,
-            subject: `Subject #${task.subjectId}`,
-            status: "todo",
-            dueDate: task.deliverDate,
-            priority: "medium",
-        };
-
-        setAllTasks(currentTasks => [nextTask, ...currentTasks]);
-    }
 
     return (
         <VerticalContainer
@@ -105,6 +113,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             />
             <NewTaskModal
                 isOpen={isNewTaskModalOpen}
+                subjects={schoolSubjects}
                 onClose={() => setIsNewTaskModalOpen(false)}
                 onCreateTask={handleCreateTask}
             />

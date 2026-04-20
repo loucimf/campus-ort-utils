@@ -1,4 +1,4 @@
-import { StrictMode, useState } from 'react';
+import { ComponentProps, StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@styles/variables.css';
 import './styles.css';
@@ -9,6 +9,7 @@ import { designSystem } from './design/system/designSystem';
 import { MainTab } from './main-components/MainTab';
 import { Dashboard } from './main-components/tabs/Dashboard';
 import { BodyText, Eyebrow, PageTitle } from './components/Texts';
+import { SystemIcon } from './design/system/SystemIcon';
 
 document.documentElement.dataset.theme = 'light';
 
@@ -30,7 +31,6 @@ const greetPage = (
 )
 
 function App() {
-
 	const tabs: Tab[] = [
 		{ id: 'dashboard', label: 'Dashboard', content: <Dashboard padding={designSystem.units.lg} />, icon: "dashboard" },
 		{ id: 'history', label: 'History', content: <BodyText tone="secondary">Coming soon..</BodyText>, icon: "chart2"  },

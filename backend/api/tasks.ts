@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "../src/http/vercel.js";
 import { handleOptions } from "../src/http/cors.js";
 import { internalError, json, methodNotAllowed } from "../src/http/responses.js";
-import { deleteUserTask, getUserTasks, updateUserTaskStatus } from "../src/repositories/tasks.js";
+import { createUserTask, deleteUserTask, getUserTasks, updateUserTaskStatus } from "../src/repositories/tasks.js";
 import type { TaskStatus } from "../src/models/database.js";
 
 const taskStatuses = new Set<TaskStatus>(["Pending", "Completed", "Overdue"]);
@@ -25,6 +25,37 @@ function getStatus(value: unknown) {
     return value as TaskStatus;
 }
 
+function getRequiredText(value: unknown, name: string) {
+    if (typeof value !== "string" || !value.trim()) {
+        throw new Error(`${name} is required.`);
+    }
+
+    return value.trim();
+}
+
+function getOptionalText(value: unknown) {
+    if (value === null || value === undefined) {
+        return null;
+    }
+
+    if (typeof value !== "string") {
+        throw new Error("description must be text.");
+    }
+
+    const text = value.trim();
+    return text || null;
+}
+
+function getRequiredDate(value: unknown, name: string) {
+    const date = getRequiredText(value, name);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(`${date}T00:00:00.000Z`))) {
+        throw new Error(`${name} must be a valid date in YYYY-MM-DD format.`);
+    }
+
+    return date;
+}
+
 function getBody(body: unknown) {
     if (!body || typeof body !== "object" || Array.isArray(body)) {
         return {};
@@ -46,6 +77,23 @@ export default async function handler(request: VercelRequest, response: VercelRe
             json(request, response, 200, {
                 ok: true,
                 tasks,
+            });
+            return;
+        }
+
+        if (request.method === "POST") {
+            const body = getBody(request.body);
+            const task = await createUserTask({
+                userId: getRequiredId(body.userId as string | string[] | undefined, "userId"),
+                subjectId: getRequiredId(body.subjectId as string | string[] | undefined, "subjectId"),
+                title: getRequiredText(body.title, "title"),
+                description: getOptionalText(body.description),
+                deliverDate: getRequiredDate(body.deliverDate, "deliverDate"),
+            });
+
+            json(request, response, 201, {
+                ok: true,
+                task,
             });
             return;
         }
@@ -90,9 +138,12 @@ export default async function handler(request: VercelRequest, response: VercelRe
             return;
         }
 
-        methodNotAllowed(request, response, ["GET", "PATCH", "DELETE", "OPTIONS"]);
+        methodNotAllowed(request, response, ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]);
     } catch (error) {
-        if (error instanceof Error && error.message.includes("must be")) {
+        if (
+            error instanceof Error
+            && (error.message.includes("must be") || error.message.includes("is required"))
+        ) {
             json(request, response, 400, {
                 ok: false,
                 error: error.message,

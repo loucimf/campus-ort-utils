@@ -3,6 +3,7 @@ import type { FormEvent } from "react";
 import { Modal } from "./Modal";
 import { LabelText, SmallText } from "./Texts";
 import styles from "@styles/components/NewTaskModal.module.css";
+import type { SchoolSubject } from "@src/models/database";
 
 export interface NewTaskFormValues {
     subjectId: number;
@@ -13,8 +14,9 @@ export interface NewTaskFormValues {
 
 interface NewTaskModalProps {
     isOpen: boolean;
+    subjects: SchoolSubject[];
     onClose: () => void;
-    onCreateTask: (task: NewTaskFormValues) => void;
+    onCreateTask: (task: NewTaskFormValues) => Promise<void> | void;
 }
 
 const initialForm = {
@@ -24,9 +26,10 @@ const initialForm = {
     deliverDate: "",
 };
 
-export function NewTaskModal({ isOpen, onClose, onCreateTask }: NewTaskModalProps) {
+export function NewTaskModal({ isOpen, subjects, onClose, onCreateTask }: NewTaskModalProps) {
     const [form, setForm] = useState(initialForm);
     const [error, setError] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     function updateField(field: keyof typeof form, value: string) {
         setForm(currentForm => ({
@@ -38,16 +41,17 @@ export function NewTaskModal({ isOpen, onClose, onCreateTask }: NewTaskModalProp
     function resetAndClose() {
         setForm(initialForm);
         setError("");
+        setIsSubmitting(false);
         onClose();
     }
 
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const subjectId = Number(form.subjectId);
 
-        if (!Number.isInteger(subjectId) || subjectId <= 0) {
-            setError("Subject ID must be a positive number.");
+        if (!Number.isInteger(subjectId) || !subjects.some(subject => subject.id === subjectId)) {
+            setError("Choose a valid subject.");
             return;
         }
 
@@ -61,34 +65,50 @@ export function NewTaskModal({ isOpen, onClose, onCreateTask }: NewTaskModalProp
             return;
         }
 
-        onCreateTask({
-            subjectId,
-            title: form.title.trim(),
-            description: form.description.trim() || null,
-            deliverDate: form.deliverDate,
-        });
+        try {
+            setIsSubmitting(true);
+            setError("");
 
-        resetAndClose();
+            await onCreateTask({
+                subjectId,
+                title: form.title.trim(),
+                description: form.description.trim() || null,
+                deliverDate: form.deliverDate,
+            });
+
+            resetAndClose();
+        } catch (error) {
+            console.error("Error creating task:", error);
+            setError("Could not create the task. Try again.");
+            setIsSubmitting(false);
+        }
     }
 
     return (
         <Modal
             isOpen={isOpen}
             title="New task"
-            description="Create a task for the signed-in user."
+            description="Create a task to keep track of."
             onClose={resetAndClose}
         >
             <form className={styles.form} onSubmit={handleSubmit}>
                 <label className={styles.field}>
-                    <LabelText>Subject ID</LabelText>
-                    <input
+                    <LabelText>Subject</LabelText>
+                    <select
                         className={styles.input}
-                        type="number"
-                        min="1"
                         value={form.subjectId}
                         onChange={event => updateField("subjectId", event.target.value)}
-                        placeholder="1"
-                    />
+                        disabled={subjects.length === 0 || isSubmitting}
+                    >
+                        <option value="">
+                            {subjects.length === 0 ? "No subjects available" : "Choose a subject"}
+                        </option>
+                        {subjects.map(subject => (
+                            <option key={subject.id} value={subject.id}>
+                                {subject.name}
+                            </option>
+                        ))}
+                    </select>
                 </label>
 
                 <label className={styles.field}>
@@ -98,6 +118,7 @@ export function NewTaskModal({ isOpen, onClose, onCreateTask }: NewTaskModalProp
                         value={form.title}
                         onChange={event => updateField("title", event.target.value)}
                         placeholder="Homework exercises"
+                        disabled={isSubmitting}
                     />
                 </label>
 
@@ -108,6 +129,7 @@ export function NewTaskModal({ isOpen, onClose, onCreateTask }: NewTaskModalProp
                         value={form.description}
                         onChange={event => updateField("description", event.target.value)}
                         placeholder="Optional details"
+                        disabled={isSubmitting}
                     />
                 </label>
 
@@ -118,21 +140,21 @@ export function NewTaskModal({ isOpen, onClose, onCreateTask }: NewTaskModalProp
                         type="date"
                         value={form.deliverDate}
                         onChange={event => updateField("deliverDate", event.target.value)}
+                        disabled={isSubmitting}
                     />
                 </label>
 
                 {error ? <SmallText className={styles.error}>{error}</SmallText> : null}
 
                 <div className={styles.actions}>
-                    <button className={styles.button} type="button" onClick={resetAndClose}>
+                    <button className={styles.button} type="button" onClick={resetAndClose} disabled={isSubmitting}>
                         Cancel
                     </button>
-                    <button className={`${styles.button} ${styles.primaryButton}`} type="submit">
-                        Create task
+                    <button className={`${styles.button} ${styles.primaryButton}`} type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Creating..." : "Create task"}
                     </button>
                 </div>
             </form>
         </Modal>
     );
 }
-
