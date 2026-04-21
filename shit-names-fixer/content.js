@@ -11,7 +11,6 @@ function waitForBody() {
 
     const onReady = () => {
       if (document.body) {
-        console.log("[TIC] document.body is ready");
         resolve();
       }
     };
@@ -36,12 +35,12 @@ function injectXHRHookFile() {
   script.src = chrome.runtime.getURL("xhr-hook.js");
 
   script.onload = () => {
-    console.log("[TIC] xhr-hook.js injected");
+    console.log("[TIC] xhr-hook.js --OK");
     script.remove();
   };
 
   script.onerror = (e) => {
-    console.error("[TIC] failed to inject xhr-hook.js", e);
+    console.error("[TIC] xhr-hook.js --FAIL ", e);
   };
 
   parent.appendChild(script);
@@ -49,40 +48,32 @@ function injectXHRHookFile() {
 
 function applyCampusChanges() {
   if (!utils) {
-    console.error("[TIC] campusOrtUtils is missing in applyCampusChanges()");
     return;
   }
 
-  console.log("[TIC] applyCampusChanges()");
   utils.renameWithMap();
   utils.appendManagerLink();
 }
 
 async function start() {
   if (!utils) {
-    console.error("[TIC] window.campusOrtUtils is missing");
     return;
   }
 
   injectXHRHookFile();
 
   await waitForBody();
-
-  console.log("[TIC] start() running");
-
   const savedNameMap = await utils.getSavedNameMap();
-  console.log("[TIC] savedNameMap loaded:", savedNameMap);
 
   utils.setNameMap(savedNameMap);
 
   applyCampusChanges();
+
   setTimeout(() => {
-    console.log("[TIC] delayed applyCampusChanges()");
     applyCampusChanges();
   }, 1000);
 
   const observer = new MutationObserver(() => {
-    console.log("[TIC] mutation detected");
     applyCampusChanges();
   });
 
@@ -91,7 +82,6 @@ async function start() {
     subtree: true
   });
 
-  console.log("[TIC] MutationObserver started");
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -102,7 +92,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (!utils) {
-    console.error("[TIC] campusOrtUtils is missing in onMessage");
     sendResponse({ ok: false, error: "campusOrtUtils missing" });
     return false;
   }
@@ -117,18 +106,29 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 window.addEventListener("message", (event) => {
   if (event.source !== window) return;
   if (!event.data || event.data.source !== "tic-extension") return;
-  if (event.data.type !== "LOGEAR_USUARIO_XHR") return;
+
+  const allowedTypes = [
+    "LOGEAR_USUARIO_XHR",
+    "GET_LOGGED_IN_DATA_XHR"
+  ];
+
+  if (!allowedTypes.includes(event.data.type)) return;
 
   console.log("[TIC] message received from page hook:", event.data);
 
   chrome.runtime.sendMessage(
     {
-      type: "LOGEAR_PAYLOAD",
-      rawBody: event.data.rawBody
+      type: event.data.type,
+      rawBody: event.data.rawBody,
+      method: event.data.method,
+      url: event.data.url
     },
     (response) => {
       if (chrome.runtime.lastError) {
-        console.error("[TIC] background message error:", chrome.runtime.lastError.message);
+        console.error(
+          "[TIC] background message error:",
+          chrome.runtime.lastError.message
+        );
         return;
       }
 
@@ -137,6 +137,4 @@ window.addEventListener("message", (event) => {
   );
 });
 
-start().catch((error) => {
-  console.error("[TIC] start() failed:", error);
-});
+start()

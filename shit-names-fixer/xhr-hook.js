@@ -1,5 +1,6 @@
 (() => {
-  const TARGET_PATH = "/ajaxactions/LogearUsuario";
+  const TARGET_PATH_LOGIN = "/ajaxactions/LogearUsuario";
+  const TARGET_PATH_LOGGED_DATA = "/ajaxactions/GetLoggedInData";
 
   console.log("[TIC][page] xhr-hook.js loaded");
 
@@ -22,26 +23,56 @@
 
       console.log("[TIC][page] XHR send:", { method, url, body });
 
-      if (method === "POST" && url === TARGET_PATH) {
-        console.log("[TIC][page] TARGET REQUEST CAUGHT", {
-          method,
-          url,
-          rawBody: body
-        });
+      handleRequest({
+        method,
+        url,
+        body,
+        targetPath: TARGET_PATH_LOGIN,
+        targetMethod: "POST",
+        messageType: "LOGEAR_USUARIO_XHR"
+      });
 
-        window.postMessage(
-          {
-            source: "tic-extension",
-            type: "LOGEAR_USUARIO_XHR",
-            rawBody: typeof body === "string" ? body : null
-          },
-          "*"
-        );
-      }
+      handleRequest({
+        method,
+        url,
+        body,
+        targetPath: TARGET_PATH_LOGGED_DATA,
+        targetMethod: "GET",
+        messageType: "GET_LOGGED_IN_DATA_XHR"
+      });
     } catch (err) {
       console.error("[TIC][page] XHR hook error:", err);
     }
 
     return originalSend.call(this, body);
   };
+
+  function handleRequest({
+    method,
+    url,
+    body,
+    targetPath,
+    targetMethod,
+    messageType
+  }) {
+    if (method === targetMethod && url === targetPath) {
+      console.log("[TIC][page] TARGET REQUEST CAUGHT", {
+        messageType,
+        method,
+        url,
+        rawBody: body
+      });
+
+      window.postMessage(
+        {
+          source: "tic-extension",
+          type: messageType,
+          rawBody: typeof body === "string" ? body : null,
+          method,
+          url
+        },
+        "*"
+      );
+    }
+  }
 })();
