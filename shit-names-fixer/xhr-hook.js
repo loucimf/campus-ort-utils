@@ -8,7 +8,7 @@
   const TARGET_PATH_LOGIN = "/ajaxactions/LogearUsuario";
   const TARGET_PATH_LOGGED_DATA = "/ajaxactions/GetLoggedInData";
 
-  console.log("xhr --ok");
+  //console.log("xhr --ok");
 
   const originalOpen = XMLHttpRequest.prototype.open;
   const originalSend = XMLHttpRequest.prototype.send;
@@ -54,12 +54,6 @@
 
       //  login request payload
       if (method === "POST" && matchesPath(url, TARGET_PATH_LOGIN)) {
-        console.log("l.req", {
-          method,
-          url,
-          pathname: getPathname(url),
-        });
-
         postExtensionMessage({
           type: "LOGEAR_USUARIO_XHR",
           rawBody: typeof body === "string" ? body : null,
@@ -68,10 +62,6 @@
         });
 
         this.addEventListener("load", function () {
-          console.log("l.res", {
-            status: this.status,
-            responseText: this.responseText
-          });
 
           postExtensionMessage({
             type: "LOGEAR_USUARIO_RESPONSE_XHR",
@@ -88,7 +78,6 @@
 
       // logged-in-data RESPONSE
       if (method === "GET" && matchesPath(url, TARGET_PATH_LOGGED_DATA)) {
-        console.log("logg.res");
 
         this.addEventListener("load", function () {
           try {
@@ -106,7 +95,6 @@
         });
       }
     } catch (err) {
-      console.error("[TIC][page] XHR hook error:", err);
     }
 
     return originalSend.call(this, body);

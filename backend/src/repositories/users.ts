@@ -18,6 +18,11 @@ interface UpdateUserProfileInput {
   gradeLetter: string;
 }
 
+interface UpdateUserProfileResult {
+  status: "updated" | "skipped" | "not_found";
+  user: User | null;
+}
+
 function mapUser(row: UserRow): User {
   return {
     id: row.id,
@@ -54,8 +59,31 @@ export async function getUser(username: string): Promise<User | null> {
   return result[0] ? mapUser(result[0]) : null;
 }
 
-export async function updateUserProfileByUsername(input: UpdateUserProfileInput): Promise<User | null> {
+export async function updateUserProfileByUsername(input: UpdateUserProfileInput): Promise<UpdateUserProfileResult> {
   const sql = getSql();
+
+  const existingUserRows = await sql`
+    SELECT id, username, full_name, password, grade, grade_letter, major_id
+    FROM users
+    WHERE username = ${input.username}
+    LIMIT 1
+  ` as UserRow[];
+
+  const existingUser = existingUserRows[0];
+
+  if (!existingUser) {
+    return {
+      status: "not_found",
+      user: null,
+    };
+  }
+
+  if (existingUser.full_name !== null) {
+    return {
+      status: "skipped",
+      user: mapUser(existingUser),
+    };
+  }
 
   const result = await sql`
     UPDATE users
@@ -64,8 +92,12 @@ export async function updateUserProfileByUsername(input: UpdateUserProfileInput)
       grade = ${input.grade},
       grade_letter = ${input.gradeLetter}
     WHERE username = ${input.username}
+      AND full_name IS NULL
     RETURNING id, username, full_name, password, grade, grade_letter, major_id
   ` as UserRow[];
 
-  return result[0] ? mapUser(result[0]) : null;
+  return {
+    status: "updated",
+    user: result[0] ? mapUser(result[0]) : null,
+  };
 }

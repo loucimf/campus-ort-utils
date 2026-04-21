@@ -110,22 +110,29 @@ export default async function handler(
     const fullname = normalizeFullname(loggedData.nombre);
     const { grade, gradeLetter } = parseGradeData(loggedData.nombreJerarquia);
 
-    const updatedUser = await updateUserProfileByUsername({
+    const updateResult = await updateUserProfileByUsername({
       username,
       fullname,
       grade,
       gradeLetter,
     });
 
-    if (!updatedUser) {
+    if (updateResult.status === "not_found" || !updateResult.user) {
       return res.status(404).json({
         error: "User not found.",
       });
     }
 
+    if (updateResult.status === "skipped") {
+      return res.status(200).json({
+        message: "User already has profile data. Update skipped.",
+        user: updateResult.user,
+      });
+    }
+
     return res.status(200).json({
       message: "User updated successfully",
-      user: updatedUser,
+      user: updateResult.user,
     });
   } catch (error) {
     console.error("api/logged-data: ERROR =", error);
