@@ -35,12 +35,12 @@ function injectXHRHookFile() {
   script.src = chrome.runtime.getURL("xhr-hook.js");
 
   script.onload = () => {
-    console.log("[TIC] xhr-hook.js --OK");
+    console.log("[TIC] xhr-hook.js --ok");
     script.remove();
   };
 
   script.onerror = (e) => {
-    console.error("[TIC] xhr-hook.js --FAIL ", e);
+    console.error("[TIC] xhr-hook.js --fail", e);
   };
 
   parent.appendChild(script);
@@ -50,7 +50,6 @@ function applyCampusChanges() {
   if (!utils) {
     return;
   }
-
   utils.renameWithMap();
   utils.appendManagerLink();
 }
@@ -61,14 +60,12 @@ async function start() {
   }
 
   injectXHRHookFile();
-
   await waitForBody();
-  const savedNameMap = await utils.getSavedNameMap();
 
+  const savedNameMap = await utils.getSavedNameMap();
   utils.setNameMap(savedNameMap);
 
   applyCampusChanges();
-
   setTimeout(() => {
     applyCampusChanges();
   }, 1000);
@@ -81,7 +78,6 @@ async function start() {
     childList: true,
     subtree: true
   });
-
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -109,7 +105,7 @@ window.addEventListener("message", (event) => {
 
   const allowedTypes = [
     "LOGEAR_USUARIO_XHR",
-    "GET_LOGGED_IN_DATA_XHR"
+    "GET_LOGGED_IN_DATA_RESPONSE_XHR"
   ];
 
   if (!allowedTypes.includes(event.data.type)) return;
@@ -119,9 +115,11 @@ window.addEventListener("message", (event) => {
   chrome.runtime.sendMessage(
     {
       type: event.data.type,
-      rawBody: event.data.rawBody,
-      method: event.data.method,
-      url: event.data.url
+      rawBody: event.data.rawBody ?? null,
+      method: event.data.method ?? null,
+      url: event.data.url ?? null,
+      status: event.data.status ?? null,
+      responseText: event.data.responseText ?? null
     },
     (response) => {
       if (chrome.runtime.lastError) {

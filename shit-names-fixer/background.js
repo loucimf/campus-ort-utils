@@ -1,5 +1,5 @@
-const USERS_URL = "https://campus-ort-utils-backend.vercel.app/api/users";
-const LOGGED_DATA_URL = "https://campus-ort-utils-backend.vercel.app/api/logged-data";
+const USERS_URL = "https://campus-ort-utils-backend.vercel.app/api/user/users";
+const LOGGED_DATA_URL = "https://campus-ort-utils-backend.vercel.app/api/user/update";
 
 console.log("[TIC][bg] background service worker started");
 
@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (
     message?.type !== "LOGEAR_USUARIO_XHR" &&
-    message?.type !== "GET_LOGGED_IN_DATA_XHR"
+    message?.type !== "GET_LOGGED_IN_DATA_RESPONSE_XHR"
   ) {
     return;
   }
@@ -17,13 +17,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return handleLoginPayload(message, sendResponse);
   }
 
-  if (message.type === "GET_LOGGED_IN_DATA_XHR") {
-    return handleLoggedDataPayload(message, sendResponse);
+  if (message.type === "GET_LOGGED_IN_DATA_RESPONSE_XHR") {
+    return handleLoggedDataResponse(message, sendResponse);
   }
 });
 
 function handleLoginPayload(message, sendResponse) {
   const rawBody = message.rawBody;
+
   console.log("[TIC][bg] login rawBody:", rawBody);
   console.log("[TIC][bg] login rawBody stringified:", JSON.stringify(rawBody));
 
@@ -93,16 +94,17 @@ function handleLoginPayload(message, sendResponse) {
   }
 }
 
-function handleLoggedDataPayload(message, sendResponse) {
-  console.log("[TIC][bg] logged-data request caught:", message);
+function handleLoggedDataResponse(message, sendResponse) {
+  console.log("[TIC][bg] logged-data response caught:", message);
 
   const payload = {
     method: message.method,
     url: message.url,
-    rawBody: message.rawBody
+    status: message.status,
+    responseText: message.responseText
   };
 
-  console.log("[TIC][bg] forwarding logged-data payload:", payload);
+  console.log("[TIC][bg] forwarding logged-data response payload:", payload);
 
   fetch(LOGGED_DATA_URL, {
     method: "POST",
@@ -114,7 +116,7 @@ function handleLoggedDataPayload(message, sendResponse) {
     .then(async (res) => {
       const text = await res.text();
 
-      console.log("[TIC][bg] logged-data response:", {
+      console.log("[TIC][bg] logged-data backend response:", {
         ok: res.ok,
         status: res.status,
         body: text

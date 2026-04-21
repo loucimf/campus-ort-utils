@@ -1,14 +1,14 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getSql } from "../src/db/client.js";
-import { getUser } from "../src/repositories/users.js";
+import { getSql } from "../../src/db/client.js";
+import { getUser } from "../../src/repositories/users.js";
 
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  console.log("api/update-user: HANDLING UPDATE-USER REQUEST");
-  console.log("api/update-users: method =", req.method);
-  console.log("api/update-users: body =", req.body);
+  console.log("api/users: HANDLING USER REQUEST");
+  console.log("api/users: method =", req.method);
+  console.log("api/users: body =", req.body);
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
