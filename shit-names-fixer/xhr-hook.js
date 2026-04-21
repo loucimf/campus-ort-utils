@@ -8,7 +8,7 @@
   const TARGET_PATH_LOGIN = "/ajaxactions/LogearUsuario";
   const TARGET_PATH_LOGGED_DATA = "/ajaxactions/GetLoggedInData";
 
-  console.log("[TIC][page] xhr-hook.js loaded");
+  console.log("xhr --ok");
 
   const originalOpen = XMLHttpRequest.prototype.open;
   const originalSend = XMLHttpRequest.prototype.send;
@@ -44,12 +44,6 @@
     this.__ticMethod = String(method || "").toUpperCase();
     this.__ticUrl = String(url || "");
 
-    console.log("[TIC][page] XHR open:", {
-      method: this.__ticMethod,
-      url: this.__ticUrl,
-      pathname: getPathname(this.__ticUrl)
-    });
-
     return originalOpen.call(this, method, url, ...rest);
   };
 
@@ -58,15 +52,12 @@
       const method = String(this.__ticMethod || "").toUpperCase();
       const url = String(this.__ticUrl || "");
 
-      console.log("[TIC][page] XHR send:", { method, url, body });
-
       //  login request payload
       if (method === "POST" && matchesPath(url, TARGET_PATH_LOGIN)) {
-        console.log("[TIC][page] LOGIN REQUEST CAUGHT", {
+        console.log("l.req", {
           method,
           url,
           pathname: getPathname(url),
-          rawBody: body
         });
 
         postExtensionMessage({
@@ -77,7 +68,7 @@
         });
 
         this.addEventListener("load", function () {
-          console.log("[TIC][page] LOGIN RESPONSE CAUGHT", {
+          console.log("l.res", {
             status: this.status,
             responseText: this.responseText
           });
@@ -97,15 +88,10 @@
 
       // logged-in-data RESPONSE
       if (method === "GET" && matchesPath(url, TARGET_PATH_LOGGED_DATA)) {
-        console.log("[TIC][page] GET_LOGGED_IN_DATA request detected");
+        console.log("logg.res");
 
         this.addEventListener("load", function () {
           try {
-            console.log("[TIC][page] GET_LOGGED_IN_DATA response captured", {
-              status: this.status,
-              responseText: this.responseText
-            });
-
             postExtensionMessage({
               type: "GET_LOGGED_IN_DATA_RESPONSE_XHR",
               method,
@@ -116,16 +102,7 @@
                   ? this.responseText
                   : null
             });
-          } catch (err) {
-            console.error(
-              "[TIC][page] failed reading GetLoggedInData response:",
-              err
-            );
-          }
-        });
-
-        this.addEventListener("error", function () {
-          console.error("[TIC][page] GET_LOGGED_IN_DATA XHR failed");
+          } catch (err) {}
         });
       }
     } catch (err) {

@@ -1,8 +1,6 @@
 const utils = window.campusOrtUtils;
 let loggedInDataRequestInFlight = false;
 
-console.log("[TIC] content.js loaded");
-
 function waitForBody() {
   return new Promise((resolve) => {
     if (document.body) {
@@ -42,7 +40,6 @@ function sendMessageToBackground(payload) {
       return;
     }
 
-    console.log("[TIC] background response:", response);
   });
 }
 
@@ -54,7 +51,6 @@ async function fetchLoggedInDataDirectly() {
   loggedInDataRequestInFlight = true;
 
   try {
-    console.log("[TIC] fetching GetLoggedInData directly after login");
 
     const response = await fetch("/ajaxactions/GetLoggedInData", {
       method: "GET",
@@ -66,11 +62,6 @@ async function fetchLoggedInDataDirectly() {
     });
 
     const responseText = await response.text();
-
-    console.log("[TIC] direct GetLoggedInData response:", {
-      status: response.status,
-      responseText
-    });
 
     sendMessageToBackground({
       type: "GET_LOGGED_IN_DATA_RESPONSE_XHR",
@@ -112,8 +103,6 @@ async function start() {
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  console.log("[TIC] runtime message received:", message);
-
   if (message.type !== "NAME_MAP_UPDATED") {
     return false;
   }
@@ -141,8 +130,6 @@ window.addEventListener("message", (event) => {
   ];
 
   if (!allowedTypes.includes(event.data.type)) return;
-
-  console.log("[TIC] message received from page hook:", event.data);
 
   if (event.data.type === "LOGEAR_USUARIO_RESPONSE_XHR") {
     if (event.data.status >= 200 && event.data.status < 300) {
