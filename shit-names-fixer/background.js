@@ -1,5 +1,6 @@
-const USERS_URL = "https://campus-ort-utils-backend.vercel.app/api/user/users";
-const LOGGED_DATA_URL = "https://campus-ort-utils-backend.vercel.app/api/user/update";
+const API_BASE_URL = "https://campus-ort-utils-backend.vercel.app/api";
+const USERS_URL = `${API_BASE_URL}/user/users`;
+const LOGGED_DATA_URL = `${API_BASE_URL}/user/update`;
 
 console.log("[TIC][bg] background service worker started");
 
@@ -59,6 +60,8 @@ function handleLoginPayload(message, sendResponse) {
 
     console.log("[TIC][bg] forwarding login payload:", payload);
 
+    console.log("[TIC][bg] posting login to:", USERS_URL);
+
     fetch(USERS_URL, {
       method: "POST",
       headers: {
@@ -76,6 +79,7 @@ function handleLoginPayload(message, sendResponse) {
         });
 
         sendResponse({
+          endpoint: USERS_URL,
           ok: res.ok,
           status: res.status,
           body: text
@@ -83,7 +87,7 @@ function handleLoginPayload(message, sendResponse) {
       })
       .catch((error) => {
         console.error("[TIC][bg] users fetch failed:", error);
-        sendResponse({ ok: false, error: error.message });
+        sendResponse({ endpoint: USERS_URL, ok: false, error: error.message });
       });
 
     return true;
@@ -106,6 +110,8 @@ function handleLoggedDataResponse(message, sendResponse) {
 
   console.log("[TIC][bg] forwarding logged-data response payload:", payload);
 
+  console.log("[TIC][bg] posting logged-data to:", LOGGED_DATA_URL);
+
   fetch(LOGGED_DATA_URL, {
     method: "POST",
     headers: {
@@ -123,6 +129,7 @@ function handleLoggedDataResponse(message, sendResponse) {
       });
 
       sendResponse({
+        endpoint: LOGGED_DATA_URL,
         ok: res.ok,
         status: res.status,
         body: text
@@ -130,7 +137,7 @@ function handleLoggedDataResponse(message, sendResponse) {
     })
     .catch((error) => {
       console.error("[TIC][bg] logged-data fetch failed:", error);
-      sendResponse({ ok: false, error: error.message });
+      sendResponse({ endpoint: LOGGED_DATA_URL, ok: false, error: error.message });
     });
 
   return true;

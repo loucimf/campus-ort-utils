@@ -8,6 +8,7 @@ export interface Major {
 export interface User {
   id?: number;
   username: string;
+  fullname?: string;
   password: string;
   grade?: number;
   gradeLetter?: string;

@@ -1,4 +1,5 @@
 const utils = window.campusOrtUtils;
+let loggedInDataRequestInFlight = false;
 
 console.log("[TIC] content.js loaded");
 
@@ -23,29 +24,6 @@ function waitForBody() {
   });
 }
 
-function injectXHRHookFile() {
-  const parent = document.head || document.documentElement;
-
-  if (!parent) {
-    console.error("[TIC] No valid parent found to inject xhr-hook.js");
-    return;
-  }
-
-  const script = document.createElement("script");
-  script.src = chrome.runtime.getURL("xhr-hook.js");
-
-  script.onload = () => {
-    console.log("[TIC] xhr-hook.js --ok");
-    script.remove();
-  };
-
-  script.onerror = (e) => {
-    console.error("[TIC] xhr-hook.js --fail", e);
-  };
-
-  parent.appendChild(script);
-}
-
 function applyCampusChanges() {
   if (!utils) {
     return;
@@ -54,12 +32,65 @@ function applyCampusChanges() {
   utils.appendManagerLink();
 }
 
+function sendMessageToBackground(payload) {
+  chrome.runtime.sendMessage(payload, (response) => {
+    if (chrome.runtime.lastError) {
+      console.error(
+        "[TIC] background message error:",
+        chrome.runtime.lastError.message
+      );
+      return;
+    }
+
+    console.log("[TIC] background response:", response);
+  });
+}
+
+async function fetchLoggedInDataDirectly() {
+  if (loggedInDataRequestInFlight) {
+    return;
+  }
+
+  loggedInDataRequestInFlight = true;
+
+  try {
+    console.log("[TIC] fetching GetLoggedInData directly after login");
+
+    const response = await fetch("/ajaxactions/GetLoggedInData", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept": "application/json, text/javascript, */*; q=0.01"
+      }
+    });
+
+    const responseText = await response.text();
+
+    console.log("[TIC] direct GetLoggedInData response:", {
+      status: response.status,
+      responseText
+    });
+
+    sendMessageToBackground({
+      type: "GET_LOGGED_IN_DATA_RESPONSE_XHR",
+      method: "GET",
+      url: "/ajaxactions/GetLoggedInData",
+      status: response.status,
+      responseText
+    });
+  } catch (error) {
+    console.error("[TIC] direct GetLoggedInData fetch failed:", error);
+  } finally {
+    loggedInDataRequestInFlight = false;
+  }
+}
+
 async function start() {
   if (!utils) {
     return;
   }
 
-  injectXHRHookFile();
   await waitForBody();
 
   const savedNameMap = await utils.getSavedNameMap();
@@ -105,6 +136,7 @@ window.addEventListener("message", (event) => {
 
   const allowedTypes = [
     "LOGEAR_USUARIO_XHR",
+    "LOGEAR_USUARIO_RESPONSE_XHR",
     "GET_LOGGED_IN_DATA_RESPONSE_XHR"
   ];
 
@@ -112,27 +144,24 @@ window.addEventListener("message", (event) => {
 
   console.log("[TIC] message received from page hook:", event.data);
 
-  chrome.runtime.sendMessage(
-    {
-      type: event.data.type,
-      rawBody: event.data.rawBody ?? null,
-      method: event.data.method ?? null,
-      url: event.data.url ?? null,
-      status: event.data.status ?? null,
-      responseText: event.data.responseText ?? null
-    },
-    (response) => {
-      if (chrome.runtime.lastError) {
-        console.error(
-          "[TIC] background message error:",
-          chrome.runtime.lastError.message
-        );
-        return;
-      }
-
-      console.log("[TIC] background response:", response);
+  if (event.data.type === "LOGEAR_USUARIO_RESPONSE_XHR") {
+    if (event.data.status >= 200 && event.data.status < 300) {
+      window.setTimeout(() => {
+        void fetchLoggedInDataDirectly();
+      }, 900);
     }
-  );
+
+    return;
+  }
+
+  sendMessageToBackground({
+    type: event.data.type,
+    rawBody: event.data.rawBody ?? null,
+    method: event.data.method ?? null,
+    url: event.data.url ?? null,
+    status: event.data.status ?? null,
+    responseText: event.data.responseText ?? null
+  });
 });
 
 start()
