@@ -1,65 +1,144 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getSql } from "../../src/db/client.js";
+import { updateUserProfileByUsername } from "../../src/repositories/users.js";
+
+interface LoggedDataPayload {
+  nombre?: unknown;
+  nombreJerarquia?: unknown;
+}
+
+function getRequiredText(value: unknown, name: string) {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`${name} is required.`);
+  }
+
+  return value.trim();
+}
+
+function parseLoggedDataResponse(responseText: string): LoggedDataPayload {
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(responseText);
+  } catch (_error) {
+    throw new Error("responseText must be valid JSON.");
+  }
+
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("responseText must contain an object.");
+  }
+
+  return parsed as LoggedDataPayload;
+}
+
+function normalizeFullname(nombre: unknown) {
+  if (typeof nombre !== "string" || !nombre.trim()) {
+    throw new Error("responseText.nombre must be a non-empty string.");
+  }
+
+  const fullname = nombre
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!fullname) {
+    throw new Error("responseText.nombre could not be parsed.");
+  }
+
+  return fullname;
+}
+
+function parseGradeData(nombreJerarquia: unknown) {
+  if (typeof nombreJerarquia !== "string" || !nombreJerarquia.trim()) {
+    throw new Error("responseText.nombreJerarquia must be a non-empty string.");
+  }
+
+  const tokens = nombreJerarquia.trim().split(/\s+/).filter(Boolean);
+  const lastToken = tokens[tokens.length - 1];
+
+  if (!lastToken) {
+    throw new Error("responseText.nombreJerarquia could not be parsed.");
+  }
+
+  const match = lastToken.match(/(\d+)([A-Za-z]+)$/);
+
+  if (!match) {
+    throw new Error("responseText.nombreJerarquia must end with grade digits and letters.");
+  }
+
+  const grade = Number(match[1]);
+  const gradeLetter = match[2].toUpperCase();
+
+  if (!Number.isInteger(grade) || grade <= 0) {
+    throw new Error("responseText.nombreJerarquia contains an invalid grade.");
+  }
+
+  return {
+    grade,
+    gradeLetter,
+  };
+}
 
 export default async function handler(
-    req: VercelRequest,
-    res: VercelResponse
+  req: VercelRequest,
+  res: VercelResponse,
 ) {
-    console.log("api/logged-data: HANDLING REQUEST");
-    console.log("api/logged-data: method =", req.method);
-    console.log("api/logged-data: body =", req.body);
+  console.log("api/logged-data: HANDLING REQUEST");
+  console.log("api/logged-data: method =", req.method);
+  console.log("api/logged-data: body =", req.body);
 
-    if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const username = getRequiredText(req.body.username, "username");
+    const method = getRequiredText(req.body.method, "method");
+    const url = getRequiredText(req.body.url, "url");
+    const responseText = getRequiredText(req.body.responseText, "responseText");
+    const status = req.body.status;
+
+    console.log("api/logged-data: parsed =", {
+      username,
+      method,
+      url,
+      status,
+      responseText,
+    });
+
+    const loggedData = parseLoggedDataResponse(responseText);
+    const fullname = normalizeFullname(loggedData.nombre);
+    const { grade, gradeLetter } = parseGradeData(loggedData.nombreJerarquia);
+
+    const updatedUser = await updateUserProfileByUsername({
+      username,
+      fullname,
+      grade,
+      gradeLetter,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        error: "User not found.",
+      });
     }
 
-    try {
-        const sql = getSql();
+    return res.status(200).json({
+      message: "User updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("api/logged-data: ERROR =", error);
 
-        const method = req.body.method;
-        const url = req.body.url;
-        const status = req.body.status;
-        const responseText = req.body.responseText ?? null;
-
-        console.log("api/logged-data: parsed =", {
-            method,
-            url,
-            status,
-            responseText
-        });
-
-        if (
-            typeof method !== "string" ||
-            method.trim() === "" ||
-            typeof url !== "string" ||
-            url.trim() === ""
-        ) {
-            return res.status(400).json({
-                error: "method and url must be valid strings"
-            });
-        }
-
-    //     const result = await sql`
-    //   INSERT INTO logged_data_records (method, url, status, response_text)
-    //   VALUES (${method.trim()}, ${url.trim()}, ${status}, ${responseText})
-    //   RETURNING id, method, url, status, response_text, created_at
-    // `;
-
-        // console.log("api/logged-data: CREATED RECORD", result[0]);
-
-        // return res.status(201).json({
-        //     message: "Logged data response saved successfully",
-        //     record: result[0]
-        // });
-        return res.status(200).json({
-            message: "nothing yet"
-        })
-    } catch (error) {
-        console.error("api/logged-data: ERROR =", error);
-
-        return res.status(500).json({
-            error: "Internal server error",
-            details: error instanceof Error ? error.message : String(error)
-        });
+    if (error instanceof Error && (error.message.includes("required") || error.message.includes("responseText"))) {
+      return res.status(400).json({
+        error: error.message,
+      });
     }
+
+    return res.status(500).json({
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
